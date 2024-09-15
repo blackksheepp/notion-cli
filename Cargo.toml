@@ -1,0 +1,9 @@
+[package]
+name = "notion_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+crossterm = "0.28.1"
+fuzzy-matcher = "0.3.7"
+indexmap = "2.4.0"
