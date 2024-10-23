@@ -1,2 +1,7 @@
 /target
 .vscode/
+.env*
+*.db
+*.json
+*.py
+*.txt
