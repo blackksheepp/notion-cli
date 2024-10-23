@@ -8,7 +8,7 @@ use crate::api::search::Object;
 // fuzzy search query in given titles
 pub fn match_search(
     query: &str,
-    options: Result<HashMap<String, Object>, reqwest::Error>,
+    options: &Result<HashMap<String, Object>, reqwest::Error>,
 ) -> HashMap<String, Object> {
     let mut titles = Vec::<String>::new();
     let objects;

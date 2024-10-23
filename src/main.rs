@@ -206,7 +206,7 @@ async fn main() {
     let favorites = vec!["hobbies", "physics", "calendar"];
     let mut favorite_pos = 0 as usize;
 
-    fn render(
+    async fn render(
         search_enabled: bool,
         search_input: &String,
         search_items: &HashMap<String, Object>,
@@ -216,7 +216,7 @@ async fn main() {
         favorite_pos: usize,
     ) {
         controls(search_enabled, true);
-        search_box(search_enabled, search_input, search_items, search_pos, None);
+        search_box(search_enabled, &search_input, search_items, search_pos, None).await;
         render_content(
             search_enabled,
             &pages,
@@ -236,9 +236,8 @@ async fn main() {
         &pages,
         &favorites,
         favorite_pos,
-    );
+    ).await;
 
-    let mut search_results = search_api(None).await;
 
     loop {
         if event::poll(Duration::from_millis(100)).unwrap() {
@@ -246,8 +245,8 @@ async fn main() {
                 match key_event.code {
                     KeyCode::Char(c) if search_enabled => {
                         search_input.push(c);
-                        let mut search_results = search_api(Some(search_input)).await;
-                        search_items = match_search(&search_input, search_results);
+                        let search_results = search_api(Some(search_input.clone())).await;
+                        search_items = match_search(&search_input, &search_results);
                         search_pos = 0;
 
                         search_box(
@@ -256,12 +255,12 @@ async fn main() {
                             &search_items,
                             &search_pos,
                             Some(true),
-                        );
+                        ).await;
                     }
                     KeyCode::Backspace if search_enabled => {
                         search_input.pop();
-                        let mut search_results = search_api(Some(search_input)).await;
-                        search_items = match_search(&search_input, search_results);
+                        let search_results = search_api(Some(search_input.clone())).await;
+                        search_items = match_search(&search_input, &search_results);
                         search_pos = 0;
 
                         search_box(
@@ -270,12 +269,12 @@ async fn main() {
                             &search_results.unwrap(),
                             &search_pos,
                             Some(true),
-                        );
+                        ).await;
                     }
                     KeyCode::Char('s') => {
                         search_enabled = !search_enabled;
-                        let mut search_results = search_api(Some(search_input)).await;
-                        search_items = match_search(&search_input, search_results);
+                        let search_results = search_api(Some(search_input.clone())).await;
+                        search_items = match_search(&search_input, &search_results);
 
                         render(
                             search_enabled,
@@ -285,12 +284,13 @@ async fn main() {
                             &pages,
                             &favorites,
                             favorite_pos,
-                        );
+                        ).await;
                     }
                     KeyCode::Esc => {
                         if search_enabled {
                             search_input.clear();
                             search_enabled = !search_enabled;
+                            let search_results = search_api(Some(search_input.clone())).await;
 
                             render(
                                 search_enabled,
@@ -300,7 +300,7 @@ async fn main() {
                                 &pages,
                                 &favorites,
                                 favorite_pos,
-                            );
+                            ).await;
                         } else {
                             if *SECTION.lock().unwrap() == 1 && page_selected {
                                 page_selected = false;
@@ -329,8 +329,8 @@ async fn main() {
                     }
                     KeyCode::Up => {
                         if search_enabled {
-                            let mut search_results = search_api(Some(search_input)).await;
-                            search_items = match_search(&search_input, search_results);
+                            let search_results = search_api(Some(search_input.clone())).await;
+                            search_items = match_search(&search_input, &search_results);
                             
                             if search_pos + 1 < search_items.len() {
                                 search_pos += 1
@@ -344,7 +344,7 @@ async fn main() {
                                 &search_items,
                                 &search_pos,
                                 None,
-                            );
+                            ).await;
                         } else {
                             if *SECTION.lock().unwrap() == 1 {
                                 if page_selected {
@@ -417,8 +417,8 @@ async fn main() {
                     }
                     KeyCode::Down => {
                         if search_enabled {
-                            let mut search_results = search_api(Some(search_input)).await;
-                            search_items = match_search(&search_input, search_results);
+                            let search_results = search_api(Some(search_input.clone())).await;
+                            search_items = match_search(&search_input, &search_results);
 
                             if search_pos > 0 {
                                 search_pos -= 1
@@ -432,7 +432,7 @@ async fn main() {
                                 &search_items,
                                 &search_pos,
                                 None,
-                            );
+                            ).await;
                         } else {
                             if *SECTION.lock().unwrap() == 1 {
                                 if page_selected {
@@ -602,7 +602,7 @@ async fn main() {
                 &pages,
                 &favorites,
                 favorite_pos,
-            );
+            ).await;
         }
     }
 

@@ -2,12 +2,10 @@ use std::fs;
 
 use crate::database::user::get_access_token;
 
-use ::tokio::runtime::Runtime;
 use reqwest::Client;
 
-use super::auth::logout;
 
-pub async fn get_pages_async() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+pub async fn get_pages() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let access_token = get_access_token();
     if access_token.is_empty() {
         // logout();
@@ -33,10 +31,5 @@ pub async fn get_pages_async() -> Result<serde_json::Value, Box<dyn std::error::
     return Ok(json_data);
 }
 
-pub fn get_pages() {
-    let rt = Runtime::new().unwrap();
-    rt.block_on(async {
-        let _ = get_pages_async().await;
-    });
-}
+
 

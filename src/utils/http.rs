@@ -5,8 +5,6 @@ use std::sync::{
     Arc,
 };
 use std::thread;
-use tokio::runtime::Runtime;
-
 use crate::api::auth::authorize;
 
 static INIT: Once = Once::new();
@@ -23,10 +21,12 @@ pub fn initialize_server() {
 
 pub fn start_server() {
     unsafe {
-        SERVER_HANDLE
+        tokio::spawn(async move {
+            SERVER_HANDLE
             .as_mut()
             .expect("Server not initialized")
-            .start_server();
+            .start_server().await;
+        });
     }
 }
 
@@ -53,7 +53,7 @@ impl ServerHandle {
         }
     }
 
-    pub fn start_server(&mut self) {
+    pub async fn start_server(&mut self) {
         let running_clone = Arc::clone(&self.running);
 
         self.thread_handle = Some(thread::spawn(move || {
@@ -85,12 +85,12 @@ impl ServerHandle {
 }
 
 fn authorize_with_code(code: &str) {
-    let rt = Runtime::new().unwrap();
-    rt.block_on(async {
-        if let Err(e) = authorize(&code).await {
+    let code_clone = code.to_string();
+    tokio::spawn(async move {
+        if let Err(e) = authorize(&code_clone).await {
             eprintln!("Error: {}", e);
         }
     });
-
+    
     thread::spawn(move || stop_server());
 }

@@ -4,7 +4,7 @@ use crossterm::{cursor::MoveTo, execute, style::{Color, Print, ResetColor, SetBa
 
 use crate::{api::{pages::get_pages, search::Object}, utils::{controls::write_ctrl, dimentions::get_dimensions}};
 
-pub fn search_box(
+pub async fn search_box(
     search_enabled: bool,
     search_input: &str,
     search_items: &HashMap<String, Object>,
@@ -104,10 +104,10 @@ pub fn search_box(
                     ),
                     SetForegroundColor(Color::White),
                     SetBackgroundColor(Color::Rgb {r: 49, g: 116, b: 143}),
-                    Print(format!(" {}", page.to_string()).bold()),
+                    Print(format!(" {}", page.1.title.to_string()).bold()),
                     SetBackgroundColor(Color::Rgb {r: 49, g: 116, b: 143}),
                     SetForegroundColor(Color::DarkGrey),
-                    Print(" ".repeat((content_width - 2) as usize - page.len() as usize - 3)),
+                    Print(" ".repeat((content_width - 2) as usize - page.1.title.to_string().len() as usize - 3)),
                     ResetColor
                 )
                 .unwrap()
@@ -119,7 +119,7 @@ pub fn search_box(
                         y_search + search_box_height - 3 - (si as u16)
                     ),
                     SetForegroundColor(Color::White),
-                    Print(page.to_string()),
+                    Print(page.1.title.to_string()),
                     ResetColor
                 )
                 .unwrap()
@@ -160,5 +160,8 @@ pub fn search_box(
         write_ctrl(&search_text, x_search, y_search + 1);
     }
 
-    get_pages();
+    match get_pages().await {
+        Ok(_) => {}
+        Err(_) => {}
+    }
 }
